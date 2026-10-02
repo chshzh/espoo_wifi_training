@@ -14,19 +14,8 @@ wifi status
 
 ```
 wifi twt quick_setup 65000 10000000
-wifi twt teardown_all
-```
-
-The AP may round the values (for example it granted 61440 us / 10.01 s in testing).
-
-Tested on an ASUS RT-BE92U (5 GHz): with 30 s and 60 s intervals the link dropped after about 1.5-3.5 minutes
-(`cookie response not received` -> `Failed to send SA Query Request` -> `reason=2`). 10 s stayed connected in a
-short test (about 3.5 minutes), so use 10 s on that AP and check that the link stays up for longer runs.
-
-`wifi twt setup` needs named options and at least 25 argument tokens, so add `-D 0 -d 0`:
-
-```
 wifi twt setup -n 0 -c 0 -t 1 -f 0 -r 0 -T 1 -I 1 -a 1 -w 65000 -p 10000000 -D 0 -d 0
+wifi twt teardown_all
 ```
 
 ## Soft AP (5 GHz)
@@ -39,47 +28,58 @@ net dhcpv4 server start 1 192.168.7.2
 
 ## zperf
 
-zperf talks to iperf2 on the PC (`iperf`, not `iperf3`). `<pc-ip>` is the PC address and `<dk-ip>` is the address the
-DK gets from DHCP (shown in the log and in `net iface`).
+The PC side uses iperf2 (`iperf`, not `iperf3`). `<pc-ip>` is the PC address, `<dk-ip>` is the DK address.
 
-### UDP
-
-| Direction | DK shell | PC |
-|---|---|---|
-| Upload (DK to PC) | `zperf udp upload <pc-ip> 5001 10 1400 80M` | `iperf -s -u -i 1` |
-| Download (PC to DK) | `zperf udp download 5001` | `iperf -c <dk-ip> -u -b 80M -l 1400 -t 10 -i 1` |
-
-The last argument of `zperf udp upload` is the requested rate, so it caps the result. Set it above what the link can
-do. On the RT-BE92U (5 GHz, channel 165, RSSI -35 dBm):
-
-| Packet size | Requested rate | Result | Loss |
-|---|---|---|---|
-| 1K | 20M | 19.2 Mbps | 0 % |
-| 1K | 80M | about 49 Mbps | 0.1-0.4 % |
-| 1400 | 80M | 53.9 Mbps | 0.2 % |
-
-Larger packets give higher throughput because there is less per-packet overhead.
-
-### TCP
-
-| Direction | DK shell | PC |
-|---|---|---|
-| Upload (DK to PC) | `zperf tcp upload <pc-ip> 5001 10 1400` | `iperf -s -i 1` |
-| Download (PC to DK) | `zperf tcp download 5001` | `iperf -c <dk-ip> -t 10 -i 1` |
-
-TCP has no rate argument; it sends as fast as the link allows (the `Rate: 10 Kbps` line it prints is unused). On the
-same RT-BE92U setup, `zperf tcp upload <pc-ip> 5001 10 1400` gave about 25 Mbps (`-n` made no difference).
-
-The TCP send window defaults to a third of the TX data pool (about 16.6 KB here). Doubling both raised TCP upload to
-about 29 Mbps for about 53 KB more RAM. To try it, add these to the zperf build command:
+Syntax:
 
 ```
--DCONFIG_NET_PKT_BUF_TX_DATA_POOL_SIZE=100000 -DCONFIG_NET_TCP_MAX_SEND_WINDOW_SIZE=32768
-``` Start the PC server before `zperf tcp upload`, and
-start `zperf tcp download` on the DK before the PC client. Stop the DK servers with `zperf tcp download stop` and
-`zperf udp download stop`.
+zperf udp upload [-S tos -a] <dest ip> [<dest port> <duration> <packet size>[K] <baud rate>[K|M]]
+zperf udp download [<port>] [<host>]
+zperf tcp upload [-S tos -a -i sec -n] <dest ip> <dest port> <duration> <packet size>[K]
+zperf tcp download [<port>] [<host>]
+```
 
-Useful `zperf tcp upload` options:
+### UDP upload (DK to PC)
 
-- `-n` disables Nagle's algorithm, for example `zperf tcp upload -n <pc-ip> 5001 10 1400`.
-- `-a -i 1` runs in the background with a report every second.
+```
+# PC
+iperf -s -u -i 1
+# DK
+zperf udp upload <pc-ip> 5001 10 1400 80M
+```
+
+### UDP download (PC to DK)
+
+```
+# DK
+zperf udp download 5001
+# PC
+iperf -c <dk-ip> -u -b 80M -l 1400 -t 10 -i 1
+```
+
+### TCP upload (DK to PC)
+
+```
+# PC
+iperf -s -i 1
+# DK
+zperf tcp upload <pc-ip> 5001 10 1400
+zperf tcp upload -n <pc-ip> 5001 10 1400
+zperf tcp upload -a -i 1 <pc-ip> 5001 10 1400
+```
+
+### TCP download (PC to DK)
+
+```
+# DK
+zperf tcp download 5001
+# PC
+iperf -c <dk-ip> -t 10 -i 1
+```
+
+### Stop the DK servers
+
+```
+zperf udp download stop
+zperf tcp download stop
+```
