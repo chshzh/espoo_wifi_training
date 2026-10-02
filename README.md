@@ -289,8 +289,8 @@ prebuilt images from `firmware/`, 10 s runs with 1000-byte packets (`1k`):
 
 | Board | UDP upload (`100M` requested) | TCP upload |
 |---|---|---|
-| nRF7120 DK | 52.8 Mbps, 0.1 % loss | 25.1 Mbps |
-| nRF7002 DK | 19.2 Mbps, 0.03 % loss | 11.9 Mbps |
+| nRF7120 DK | 52.8 Mbps | 25.1 Mbps |
+| nRF7002 DK | 19.2 Mbps | 11.9 Mbps |
 
 ## Notes
 
