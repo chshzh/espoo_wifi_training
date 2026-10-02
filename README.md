@@ -282,6 +282,16 @@ zperf udp download stop
 zperf tcp download stop
 ```
 
+#### Reference results
+
+DK uploading to a PC (iperf2) over an ASUS RT-BE92U, 5 GHz channel 165, Wi-Fi 6, NCS `main` @ `b58a49d545`,
+prebuilt images from `firmware/`, 10 s runs with 1000-byte packets (`1k`):
+
+| Board | UDP upload (`100M` requested) | TCP upload |
+|---|---|---|
+| nRF7120 DK | 52.8 Mbps, 0.1 % loss | 25.1 Mbps |
+| nRF7002 DK | 19.2 Mbps, 0.03 % loss | 11.9 Mbps |
+
 ## Notes
 
 - `main` moves quickly. If a build breaks, check out the commit listed above.
