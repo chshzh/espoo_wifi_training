@@ -13,7 +13,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 
 | File | Contents | Source |
 |---|---|---|
-| `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) and `wifi cred` storage | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
+| `firmware/wifi_shell_zperf_nrf7120dk.hex` | Wi-Fi shell with zperf (client and server) and `wifi cred` storage | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
 | `firmware/wifi_shell_zperf_nrf7002dk.hex` | Same Wi-Fi shell with zperf and `wifi cred`, for the **nRF7002 DK** (nRF5340 app core) | `nrf/samples/wifi/shell` + `overlay-zperf.conf` |
 | `firmware/power_consumption_systemonidle64k.hex` | System ON idle power benchmark, 64 KiB RAM retained (as in the Confluence data-collection procedure), with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
 | `firmware/nrf71_power_test_systemoff.hex` | System OFF power test: enters System OFF at boot (no wake-up source, no RAM retention, trim workaround applied) | `samples/nrf71_power_test` (from `simonduq/unified-test`, adapted to build on `main`) |
@@ -128,7 +128,7 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 The first four extra arguments match the `sample.nrf7120.shell.zperf` scenario in the sample's `sample.yaml`:
 the nRF7120 Wi-Fi ROM patch overlay, `CONFIG_WIFI_NRF71_PATCH=y`, and disabling the nRF70 sysbuild image.
 `nrf71-zperf.conf` disables credential storage; the last line turns it back on so `wifi cred` works.
-The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
+The prebuilt `firmware/wifi_shell_zperf_nrf7120dk.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
 (`firmware/power_consumption_systemonidle64k.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
 
 For the nRF7002 DK (`sample.nrf7002.shell.zperf` scenario plus credential storage):
