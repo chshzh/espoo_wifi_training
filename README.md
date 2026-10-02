@@ -14,6 +14,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 | File | Contents | Source |
 |---|---|---|
 | `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) and `wifi cred` storage | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
+| `firmware/wifi_shell_zperf_nrf7002dk.hex` | Same Wi-Fi shell with zperf and `wifi cred`, for the **nRF7002 DK** (nRF5340 app core) | `nrf/samples/wifi/shell` + `overlay-zperf.conf` |
 | `firmware/power_consumption_systemonidle64k.hex` | System ON idle power benchmark, 64 KiB RAM retained (as in the Confluence data-collection procedure), with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
 | `firmware/nrf71_power_test_systemoff.hex` | System OFF power test: enters System OFF at boot (no wake-up source, no RAM retention, trim workaround applied) | `samples/nrf71_power_test` (from `simonduq/unified-test`, adapted to build on `main`) |
 
@@ -29,6 +30,15 @@ Replace `<firmware>` with one of the files above and `<SN>` with the serial numb
 nrfutil device program --firmware firmware/<firmware>.hex \
   --x-family nrf71 \
   --options chip_erase_mode=ERASE_ALL,verify=VERIFY_READ \
+  --serial-number <SN>
+nrfutil device reset --serial-number <SN>
+```
+
+For the nRF7002 DK image, use the nRF53 family instead:
+
+```sh
+nrfutil device program --firmware firmware/wifi_shell_zperf_nrf7002dk.hex \
+  --x-family nrf53 --options chip_erase_mode=ERASE_ALL,verify=VERIFY_READ \
   --serial-number <SN>
 nrfutil device reset --serial-number <SN>
 ```
@@ -120,6 +130,17 @@ the nRF7120 Wi-Fi ROM patch overlay, `CONFIG_WIFI_NRF71_PATCH=y`, and disabling 
 `nrf71-zperf.conf` disables credential storage; the last line turns it back on so `wifi cred` works.
 The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
 (`firmware/power_consumption_systemonidle64k.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
+
+For the nRF7002 DK (`sample.nrf7002.shell.zperf` scenario plus credential storage):
+
+```sh
+nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
+  west build -p -b nrf7002dk/nrf5340/cpuapp -d nrf/samples/wifi/shell/build_nrf7002dk nrf/samples/wifi/shell -- \
+  -DEXTRA_CONF_FILE=overlay-zperf.conf \
+  -DCONFIG_WIFI_CREDENTIALS=y -DCONFIG_FLASH=y -DCONFIG_NVS=y -DCONFIG_SETTINGS=y -DCONFIG_SETTINGS_NVS=y
+```
+
+`firmware/wifi_shell_zperf_nrf7002dk.hex` is `shell/zephyr/zephyr.hex` from this build.
 
 ### 3.2 Power consumption (System ON idle)
 
