@@ -42,7 +42,7 @@ zperf tcp download [<port>] [<host>]
 # PC
 iperf -s -u -i 1
 # DK
-zperf udp upload <pc-ip> 5001 10 1400 100M
+zperf udp upload <pc-ip> 5001 10 1K 100M
 ```
 
 ### UDP download (PC to DK)
@@ -51,7 +51,7 @@ zperf udp upload <pc-ip> 5001 10 1400 100M
 # DK
 zperf udp download 5001
 # PC
-iperf -c <dk-ip> -u -b 100M -l 1400 -t 10 -i 1
+iperf -c <dk-ip> -u -b 100M -l 1K -t 10 -i 1
 ```
 
 ### TCP upload (DK to PC)
@@ -60,9 +60,9 @@ iperf -c <dk-ip> -u -b 100M -l 1400 -t 10 -i 1
 # PC
 iperf -s -i 1
 # DK
-zperf tcp upload <pc-ip> 5001 10 1400
-zperf tcp upload -n <pc-ip> 5001 10 1400
-zperf tcp upload -a -i 1 <pc-ip> 5001 10 1400
+zperf tcp upload <pc-ip> 5001 10 1K
+zperf tcp upload -n <pc-ip> 5001 10 1K
+zperf tcp upload -a -i 1 <pc-ip> 5001 10 1K
 ```
 
 ### TCP download (PC to DK)
