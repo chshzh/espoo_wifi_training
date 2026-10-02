@@ -4,10 +4,15 @@ Replace `<SSID>` and `<PASSWORD>` with your own network. Do not commit real cred
 
 ```
 wifi scan
-wifi cred add -s <SSID> -k 1 -p <PASSWORD>
-wifi cred auto_connect
 wifi connect -s <SSID> -k 1 -p <PASSWORD>
 wifi status
+```
+
+Optional: store the Wi-Fi credentials once, then connect with `wifi cred auto_connect` after a restart.
+
+```
+wifi cred add -s <SSID> -k 1 -p <PASSWORD>
+wifi cred auto_connect
 ```
 
 ## Target Wake Time (TWT): 10 s wake-up, 65 ms awake
@@ -16,14 +21,6 @@ wifi status
 wifi twt quick_setup 65000 10000000
 wifi twt setup -n 0 -c 0 -t 1 -f 0 -r 0 -T 1 -I 1 -a 1 -w 65000 -p 10000000 -D 0 -d 0
 wifi twt teardown_all
-```
-
-## Soft AP (5 GHz)
-
-```
-wifi reg_domain NO
-wifi ap enable -s nRF7120DK_SAP -c 165 -p mypassword -k 1
-net dhcpv4 server start 1 192.168.7.2
 ```
 
 ## zperf
@@ -45,7 +42,7 @@ zperf tcp download [<port>] [<host>]
 # PC
 iperf -s -u -i 1
 # DK
-zperf udp upload <pc-ip> 5001 10 1400 80M
+zperf udp upload <pc-ip> 5001 10 1400 100M
 ```
 
 ### UDP download (PC to DK)
@@ -54,7 +51,7 @@ zperf udp upload <pc-ip> 5001 10 1400 80M
 # DK
 zperf udp download 5001
 # PC
-iperf -c <dk-ip> -u -b 80M -l 1400 -t 10 -i 1
+iperf -c <dk-ip> -u -b 100M -l 1400 -t 10 -i 1
 ```
 
 ### TCP upload (DK to PC)
