@@ -54,7 +54,12 @@ The standalone `nrfutil device program` commands have not been run on a board he
 ### 2.1 Install tools
 
 1. Install `nrfutil` and the `sdk-manager` command: <https://docs.nordicsemi.com/bundle/nrfutil/page/guides/installing.html>
-2. Install a toolchain. `main` needs a recent one; `v3.5.0-preview2` worked:
+2. Update `nrfutil` and its `device` command. nRF71 programming needs `nrfutil device` 2.21.0 or newer:
+   ```sh
+   nrfutil self-upgrade
+   nrfutil upgrade device
+   ```
+3. Install a toolchain. `main` needs a recent one; `v3.5.0-preview2` worked:
    ```sh
    nrfutil install sdk-manager
    nrfutil sdk-manager toolchain install --ncs-version v3.5.0-preview2
