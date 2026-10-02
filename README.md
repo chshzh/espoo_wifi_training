@@ -284,7 +284,7 @@ zperf tcp download stop
 
 #### Reference results
 
-DK uploading to a PC (iperf2) over an ASUS RT-BE92U, 5 GHz channel 165, Wi-Fi 6, NCS `main` @ `b58a49d545`,
+DK uploading to a PC (iperf2) over an ASUS RT-BE92U, 5 GHz channel 165, Wi-Fi 6, office environment (not an RF chamber), NCS `main` @ `b58a49d545`,
 prebuilt images from `firmware/`, 10 s runs with 1000-byte packets (`1k`):
 
 | Board | UDP upload (`100M` requested) | TCP upload |
