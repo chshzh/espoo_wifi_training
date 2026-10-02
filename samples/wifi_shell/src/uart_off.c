@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
 #include <zephyr/pm/device.h>
@@ -23,7 +24,7 @@
 #define UART_OFF_MAX_SECONDS 3600
 /* Time for the last shell output to leave the UART before it is suspended. */
 #define UART_OFF_FLUSH_MS 200
-#define UART_OFF_SETTLE_MS 50
+#define UART_OFF_SETTLE_MS 100
 
 static const struct device *const shell_uart = DEVICE_DT_GET(DT_CHOSEN(zephyr_shell_uart));
 
@@ -39,6 +40,8 @@ static void uart_on_handler(struct k_work *work)
 	ARG_UNUSED(work);
 
 	pm_device_runtime_get(shell_uart);
+	/* The shell backend's RX interrupt callback is still registered. */
+	uart_irq_rx_enable(shell_uart);
 	shell_start(sh);
 	uart_is_off = false;
 	shell_print(sh, "UART is back on");
@@ -52,6 +55,12 @@ static void uart_off_handler(struct k_work *work)
 	ARG_UNUSED(work);
 
 	shell_stop(sh);
+	/* shell_stop() leaves the backend's interrupts on. In interrupt-driven mode the
+	 * UARTE driver holds a runtime PM reference while RX (or TX) interrupts are
+	 * enabled, so disable them first.
+	 */
+	uart_irq_tx_disable(shell_uart);
+	uart_irq_rx_disable(shell_uart);
 	/* Drop the reference the shell UART backend took at init. If nobody else holds the
 	 * device, runtime PM suspends it.
 	 */
@@ -62,6 +71,7 @@ static void uart_off_handler(struct k_work *work)
 	if (state != PM_DEVICE_STATE_SUSPENDED) {
 		/* Another user keeps the UART active: undo and report. */
 		pm_device_runtime_get(shell_uart);
+		uart_irq_rx_enable(shell_uart);
 		shell_start(sh);
 		shell_error(sh, "UART did not suspend (state %d), another user holds it", state);
 		return;
