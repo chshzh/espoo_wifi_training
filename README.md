@@ -14,7 +14,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 | File | Contents | Source |
 |---|---|---|
 | `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
-| `firmware/system_on_idle_fullram_retain.hex` | System ON idle power benchmark, all RAM retained | `nrf/samples/benchmarks/power_consumption` |
+| `firmware/system_on_idle_fullram_retain.hex` | System ON idle power benchmark, all RAM retained, with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
 
 Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing):
 
@@ -95,11 +95,22 @@ The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex
 
 ### 3.2 Power consumption (System ON idle)
 
+This repo carries its own copy in `samples/power_consumption`: the `main` sample plus the
+`TRIM.LOWPOWER` workaround described below. Build it from the workspace root:
+
 ```sh
-cd nrf/samples/benchmarks/power_consumption
 nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
-  west build -p -b nrf7120dk/nrf7120/cpuapp -d build .
+  west build -p -b nrf7120dk/nrf7120/cpuapp -d samples/power_consumption/build samples/power_consumption
 ```
+
+The in-tree sample (`nrf/samples/benchmarks/power_consumption`) builds the same way but without the workaround.
+
+**TRIM.LOWPOWER workaround.** Some nRF7120 DKs have a factory trim on the 1.8 V LDO low-power comparator
+(`VREGVBAT1V8` `TRIM.LOWPOWER` at `0x50126448`) that adds about 60 uA while sleeping. The copy writes `7` to it
+right before each `k_sleep()` (secure builds only; it is not applied to `/ns`). Start-up code restores the factory
+value, so it must be written just before sleeping. Per earlier measurements, one affected DK went from about
+64.7 uA to about 3.3 uA. Good boards are not affected. To check your DK, build the in-tree sample without the fix:
+about 60 uA means it is affected, a few uA means it is not.
 
 All RAM is retained by default. For other retention levels add a Kconfig option, for example
 `-- -DCONFIG_SAMPLE_POWER_CONSUMPTION_RAM_RETAIN_64K=y` (also `128K`, `256K`, `512K`, `UNUSED_ONLY`).
