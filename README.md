@@ -14,7 +14,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 | File | Contents | Source |
 |---|---|---|
 | `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
-| `firmware/power_consumption.hex` | System ON idle power benchmark, all RAM retained | `nrf/samples/benchmarks/power_consumption` |
+| `firmware/system_on_idle_fullram_retain.hex` | System ON idle power benchmark, all RAM retained | `nrf/samples/benchmarks/power_consumption` |
 
 Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing):
 
@@ -91,7 +91,7 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 The extra arguments match the `sample.nrf7120.shell.zperf` scenario in the sample's `sample.yaml`:
 the nRF7120 Wi-Fi ROM patch overlay, `CONFIG_WIFI_NRF71_PATCH=y`, and disabling the nRF70 sysbuild image.
 The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
-(`firmware/power_consumption.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
+(`firmware/system_on_idle_fullram_retain.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
 
 ### 3.2 Power consumption (System ON idle)
 
