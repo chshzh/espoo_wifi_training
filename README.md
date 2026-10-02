@@ -17,17 +17,37 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 | `firmware/power_consumption_systemonidle64k.hex` | System ON idle power benchmark, 64 KiB RAM retained (as in the Confluence data-collection procedure), with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
 | `firmware/nrf71_power_test_systemoff.hex` | System OFF power test: enters System OFF at boot (no wake-up source, no RAM retention, trim workaround applied) | `samples/nrf71_power_test` (from `simonduq/unified-test`, adapted to build on `main`) |
 
-Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing):
+Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing).
+
+### Flash a prebuilt image
+
+Use `nrfutil device` 2.21.0 or newer (needed for `--x-family nrf71`), run directly and not through the toolchain wrapper.
+Replace `<firmware>` with one of the files above and `<SN>` with the serial number from `nrfutil device list`
+(omit `--serial-number` if only one board is connected):
 
 ```sh
-nrfutil device program --firmware firmware/wifi_shell_zperf.hex --x-family nrf71 \
-  --options chip_erase_mode=ERASE_ALL,verify=VERIFY_READ
+nrfutil device program --firmware firmware/<firmware>.hex \
+  --x-family nrf71 \
+  --options chip_erase_mode=ERASE_ALL,verify=VERIFY_READ \
+  --serial-number <SN>
+nrfutil device reset --serial-number <SN>
+```
+
+For example, the System OFF image:
+
+```sh
+nrfutil device program --firmware firmware/nrf71_power_test_systemoff.hex \
+  --x-family nrf71 --options chip_erase_mode=ERASE_ALL,verify=VERIFY_READ
 nrfutil device reset
 ```
 
-Use `--serial-number <SN>` if more than one board is connected (`nrfutil device list`).
-These standalone commands are untested here; if the board does not start, flash with `west flash`
-from a build as described below.
+`chip_erase_mode=ERASE_ALL` erases the whole chip first (like `west flash --erase`); drop it to keep other data.
+
+For current measurements with the System OFF or System ON idle images, unplug the USB cable after flashing so the DK
+runs only from the PPK2 (see section 4). The System OFF image prints nothing and only wakes on a pin reset or power cycle.
+
+The standalone `nrfutil device program` commands have not been run on a board here; the equivalent `west flash`
+(section 3.4) was. If the board does not start, flash from a build instead.
 
 ## 2. Set up the NCS `main` workspace
 
