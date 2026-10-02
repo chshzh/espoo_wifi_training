@@ -19,9 +19,10 @@ wifi twt teardown_all
 
 The AP may round the values (for example it granted 61440 us / 10.01 s in testing).
 
-Tested on an ASUS RT-BE92U (5 GHz): 10 s and 30 s intervals stay connected. With 60 s the link dropped about
-90-120 s after setup (`cookie response not received` -> `Failed to send SA Query Request` -> `reason=2`),
-so keep the interval at 30 s or below on that AP.
+Tested on an ASUS RT-BE92U (5 GHz): with 30 s and 60 s intervals the link dropped after about 1.5-3.5 minutes
+(`cookie response not received` -> `Failed to send SA Query Request` -> `reason=2`). 10 s stayed connected in a
+short test (about 3.5 minutes), so use 10 s on that AP and check that the link stays up for longer runs.
+
 `wifi twt setup` needs named options and at least 25 argument tokens, so add `-D 0 -d 0`:
 
 ```
@@ -40,7 +41,11 @@ net dhcpv4 server start 1 192.168.7.2
 
 ```
 zperf udp download 5001
-zperf udp upload <peer-ip> 5001 10 1K 20M
+zperf udp upload <peer-ip> 5001 10 1K 80M
 zperf tcp download 5001
 zperf tcp upload <peer-ip> 5001 10 1K
 ```
+
+The last argument of `zperf udp upload` is the requested rate, so it caps the result. Set it above what the link can
+do: on the RT-BE92U (5 GHz, 65 Mbps PHY rate) `20M` gave 19.2 Mbps with no loss, and `80M` gave about 49 Mbps
+with 0.2-0.4 % loss, which is the real UDP upload limit there.
