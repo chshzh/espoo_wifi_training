@@ -11,18 +11,16 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 
 ## 1. Prebuilt firmware
 
-| Folder | Contents | Source |
+| File | Contents | Source |
 |---|---|---|
-| `firmware/wifi_shell_zperf/` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
-| `firmware/power_consumption/` | System ON idle power benchmark, all RAM retained | `nrf/samples/benchmarks/power_consumption` |
+| `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
+| `firmware/power_consumption.hex` | System ON idle power benchmark, all RAM retained | `nrf/samples/benchmarks/power_consumption` |
 
-Each folder has `app.hex` and `uicr.hex`. **Flash both**, application first:
+Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing):
 
 ```sh
-nrfutil device program --firmware firmware/wifi_shell_zperf/app.hex --x-family nrf71 \
+nrfutil device program --firmware firmware/wifi_shell_zperf.hex --x-family nrf71 \
   --options chip_erase_mode=ERASE_ALL,verify=VERIFY_READ
-nrfutil device program --firmware firmware/wifi_shell_zperf/uicr.hex --x-family nrf71 \
-  --options verify=VERIFY_READ
 nrfutil device reset
 ```
 
@@ -92,7 +90,8 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 
 The extra arguments match the `sample.nrf7120.shell.zperf` scenario in the sample's `sample.yaml`:
 the nRF7120 Wi-Fi ROM patch overlay, `CONFIG_WIFI_NRF71_PATCH=y`, and disabling the nRF70 sysbuild image.
-The prebuilt `app.hex` is `shell/zephyr/zephyr.nrf7120.hex` and `uicr.hex` is `uicr/zephyr/zephyr.hex` from this build.
+The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
+(`firmware/power_consumption.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
 
 ### 3.2 Power consumption (System ON idle)
 
