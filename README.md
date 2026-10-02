@@ -14,7 +14,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 | File | Contents | Source |
 |---|---|---|
 | `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
-| `firmware/system_on_idle_fullram_retain.hex` | System ON idle power benchmark, all RAM retained, with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
+| `firmware/power_consumption_systemonidle64k.hex` | System ON idle power benchmark, 64 KiB RAM retained (as in the Confluence data-collection procedure), with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
 
 Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing):
 
@@ -91,7 +91,7 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 The extra arguments match the `sample.nrf7120.shell.zperf` scenario in the sample's `sample.yaml`:
 the nRF7120 Wi-Fi ROM patch overlay, `CONFIG_WIFI_NRF71_PATCH=y`, and disabling the nRF70 sysbuild image.
 The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
-(`firmware/system_on_idle_fullram_retain.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
+(`firmware/power_consumption_systemonidle64k.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
 
 ### 3.2 Power consumption (System ON idle)
 
@@ -100,7 +100,8 @@ This repo carries its own copy in `samples/power_consumption`: the `main` sample
 
 ```sh
 nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
-  west build -p -b nrf7120dk/nrf7120/cpuapp -d samples/power_consumption/build samples/power_consumption
+  west build -p -b nrf7120dk/nrf7120/cpuapp -d samples/power_consumption/build samples/power_consumption -- \
+  -DCONFIG_SAMPLE_POWER_CONSUMPTION_RAM_RETAIN_64K=y
 ```
 
 The in-tree sample (`nrf/samples/benchmarks/power_consumption`) builds the same way but without the workaround.
@@ -112,8 +113,8 @@ value, so it must be written just before sleeping. Per earlier measurements, one
 64.7 uA to about 3.3 uA. Good boards are not affected. To check your DK, build the in-tree sample without the fix:
 about 60 uA means it is affected, a few uA means it is not.
 
-All RAM is retained by default. For other retention levels add a Kconfig option, for example
-`-- -DCONFIG_SAMPLE_POWER_CONSUMPTION_RAM_RETAIN_64K=y` (also `128K`, `256K`, `512K`, `UNUSED_ONLY`).
+The command above retains only the first 64 KiB of RAM, which is what the prebuilt hex uses. Without the option all RAM
+is retained (the default). Other levels: `RAM_RETAIN_128K`, `256K`, `512K`, `UNUSED_ONLY`.
 The sleep time is `CONFIG_SAMPLE_POWER_CONSUMPTION_IDLE_SECONDS` (default 10 s).
 
 For the non-secure variant use `-b nrf7120dk/nrf7120/cpuapp/ns`.
