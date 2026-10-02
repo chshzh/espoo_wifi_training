@@ -10,18 +10,22 @@ wifi connect -s <SSID> -k 1 -p <PASSWORD>
 wifi status
 ```
 
-## Target Wake Time (TWT): 60 s wake-up, 65 ms awake
+## Target Wake Time (TWT): 10 s wake-up, 65 ms awake
 
 ```
-wifi twt quick_setup 65000 60000000
+wifi twt quick_setup 65000 10000000
 wifi twt teardown_all
 ```
 
-The AP may round the values (for example it granted 61440 us / 60.03 s in testing).
+The AP may round the values (for example it granted 61440 us / 10.01 s in testing).
+
+Tested on an ASUS RT-BE92U (5 GHz): 10 s and 30 s intervals stay connected. With 60 s the link dropped about
+90-120 s after setup (`cookie response not received` -> `Failed to send SA Query Request` -> `reason=2`),
+so keep the interval at 30 s or below on that AP.
 `wifi twt setup` needs named options and at least 25 argument tokens, so add `-D 0 -d 0`:
 
 ```
-wifi twt setup -n 0 -c 0 -t 1 -f 0 -r 0 -T 1 -I 1 -a 1 -w 65000 -p 60000000 -D 0 -d 0
+wifi twt setup -n 0 -c 0 -t 1 -f 0 -r 0 -T 1 -I 1 -a 1 -w 65000 -p 10000000 -D 0 -d 0
 ```
 
 ## Soft AP (5 GHz)
