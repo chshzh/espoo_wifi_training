@@ -15,6 +15,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 |---|---|---|
 | `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
 | `firmware/power_consumption_systemonidle64k.hex` | System ON idle power benchmark, 64 KiB RAM retained (as in the Confluence data-collection procedure), with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
+| `firmware/nrf71_power_test_systemoff.hex` | System OFF power test: enters System OFF at boot (no wake-up source, no RAM retention, trim workaround applied) | `samples/nrf71_power_test` (from `simonduq/unified-test`, adapted to build on `main`) |
 
 Each file is a complete image (the build's UICR image is empty, so nothing else needs flashing):
 
@@ -119,7 +120,23 @@ The sleep time is `CONFIG_SAMPLE_POWER_CONSUMPTION_IDLE_SECONDS` (default 10 s).
 
 For the non-secure variant use `-b nrf7120dk/nrf7120/cpuapp/ns`.
 
-### 3.3 Flash from a build
+### 3.3 System OFF (nrf71_power_test)
+
+`samples/nrf71_power_test` is the System OFF sample from the Confluence procedure (`simonduq/unified-test`, commit `a837962bbc`).
+Changes so it builds standalone on `main`: the radio_test Kconfig is copied locally as `Kconfig.radio_test`, and
+`CONFIG_WIFI_NRF71_PATCH_VERSION` is removed from `prj.conf` (the patch comes from the devicetree overlay on `main`).
+
+```sh
+nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
+  west build -p -b nrf7120dk/nrf7120/cpuapp -d samples/nrf71_power_test/build samples/nrf71_power_test -- \
+  -DCONFIG_NRF71_POWER_TEST_DEFAULT_MODE_SYSTEMOFF=y \
+  '-DEXTRA_DTC_OVERLAY_FILE=${ZEPHYR_NRFXLIB_MODULE_DIR}/nrf71_wifi/bins/0.1.0/nrf7120_wifi_patch.dtsi'
+```
+
+Without the first option the image boots to a shell; run `systemoff` (or press `sw0`) to enter System OFF.
+The sample writes `TRIM.LOWPOWER = 7` right before powering off. Only a pin reset or power cycle wakes it.
+
+### 3.4 Flash from a build
 
 ```sh
 nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
@@ -137,4 +154,4 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 ## Notes
 
 - `main` moves quickly. If a build breaks, check out the commit listed above.
-- Other sample that measures System OFF: `nrf/samples/zephyr/boards/nordic/system_off`.
+- Simpler alternative System OFF sample: `nrf/samples/zephyr/boards/nordic/system_off` (has wake-up options, no trim workaround).
