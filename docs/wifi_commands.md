@@ -41,11 +41,18 @@ net dhcpv4 server start 1 192.168.7.2
 
 ```
 zperf udp download 5001
-zperf udp upload <peer-ip> 5001 10 1K 80M
+zperf udp upload <peer-ip> 5001 10 1400 80M
 zperf tcp download 5001
 zperf tcp upload <peer-ip> 5001 10 1K
 ```
 
 The last argument of `zperf udp upload` is the requested rate, so it caps the result. Set it above what the link can
-do: on the RT-BE92U (5 GHz, 65 Mbps PHY rate) `20M` gave 19.2 Mbps with no loss, and `80M` gave about 49 Mbps
-with 0.2-0.4 % loss, which is the real UDP upload limit there.
+do. On the RT-BE92U (5 GHz, channel 165, RSSI -35 dBm):
+
+| Packet size | Requested rate | Result | Loss |
+|---|---|---|---|
+| 1K | 20M | 19.2 Mbps | 0 % |
+| 1K | 80M | about 49 Mbps | 0.1-0.4 % |
+| 1400 | 80M | 53.9 Mbps | 0.2 % |
+
+Larger packets give higher throughput because there is less per-packet overhead.
