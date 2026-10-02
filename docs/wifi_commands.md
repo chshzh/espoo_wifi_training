@@ -68,7 +68,14 @@ Larger packets give higher throughput because there is less per-packet overhead.
 | Download (PC to DK) | `zperf tcp download 5001` | `iperf -c <dk-ip> -t 10 -i 1` |
 
 TCP has no rate argument; it sends as fast as the link allows (the `Rate: 10 Kbps` line it prints is unused). On the
-same RT-BE92U setup, `zperf tcp upload <pc-ip> 5001 10 1400` gave about 25 Mbps. Start the PC server before `zperf tcp upload`, and
+same RT-BE92U setup, `zperf tcp upload <pc-ip> 5001 10 1400` gave about 25 Mbps (`-n` made no difference).
+
+The TCP send window defaults to a third of the TX data pool (about 16.6 KB here). Doubling both raised TCP upload to
+about 29 Mbps for about 53 KB more RAM. To try it, add these to the zperf build command:
+
+```
+-DCONFIG_NET_PKT_BUF_TX_DATA_POOL_SIZE=100000 -DCONFIG_NET_TCP_MAX_SEND_WINDOW_SIZE=32768
+``` Start the PC server before `zperf tcp upload`, and
 start `zperf tcp download` on the DK before the PC client. Stop the DK servers with `zperf tcp download stop` and
 `zperf udp download stop`.
 
