@@ -39,12 +39,15 @@ net dhcpv4 server start 1 192.168.7.2
 
 ## zperf
 
-```
-zperf udp download 5001
-zperf udp upload <peer-ip> 5001 10 1400 80M
-zperf tcp download 5001
-zperf tcp upload <peer-ip> 5001 10 1K
-```
+zperf talks to iperf2 on the PC (`iperf`, not `iperf3`). `<pc-ip>` is the PC address and `<dk-ip>` is the address the
+DK gets from DHCP (shown in the log and in `net iface`).
+
+### UDP
+
+| Direction | DK shell | PC |
+|---|---|---|
+| Upload (DK to PC) | `zperf udp upload <pc-ip> 5001 10 1400 80M` | `iperf -s -u -i 1` |
+| Download (PC to DK) | `zperf udp download 5001` | `iperf -c <dk-ip> -u -b 80M -l 1400 -t 10 -i 1` |
 
 The last argument of `zperf udp upload` is the requested rate, so it caps the result. Set it above what the link can
 do. On the RT-BE92U (5 GHz, channel 165, RSSI -35 dBm):
@@ -56,3 +59,19 @@ do. On the RT-BE92U (5 GHz, channel 165, RSSI -35 dBm):
 | 1400 | 80M | 53.9 Mbps | 0.2 % |
 
 Larger packets give higher throughput because there is less per-packet overhead.
+
+### TCP
+
+| Direction | DK shell | PC |
+|---|---|---|
+| Upload (DK to PC) | `zperf tcp upload <pc-ip> 5001 10 1400` | `iperf -s -i 1` |
+| Download (PC to DK) | `zperf tcp download 5001` | `iperf -c <dk-ip> -t 10 -i 1` |
+
+TCP has no rate argument; it sends as fast as the link allows. Start the PC server before `zperf tcp upload`, and
+start `zperf tcp download` on the DK before the PC client. Stop the DK servers with `zperf tcp download stop` and
+`zperf udp download stop`.
+
+Useful `zperf tcp upload` options:
+
+- `-n` disables Nagle's algorithm, for example `zperf tcp upload -n <pc-ip> 5001 10 1400`.
+- `-a -i 1` runs in the background with a report every second.
