@@ -13,7 +13,7 @@ nRF Connect SDK (NCS) **`main`** branch. Prebuilt firmware is included so you ca
 
 | File | Contents | Source |
 |---|---|---|
-| `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) and the extra `uart_off <seconds>` command | `samples/wifi_shell` (copy of `nrf/samples/wifi/shell`) + `nrf71-zperf.conf` |
+| `firmware/wifi_shell_zperf.hex` | Wi-Fi shell with zperf (client and server) | `nrf/samples/wifi/shell` + `nrf71-zperf.conf` |
 | `firmware/power_consumption_systemonidle64k.hex` | System ON idle power benchmark, 64 KiB RAM retained (as in the Confluence data-collection procedure), with the TRIM.LOWPOWER workaround | `samples/power_consumption` (copy of `nrf/samples/benchmarks/power_consumption`) |
 | `firmware/nrf71_power_test_systemoff.hex` | System OFF power test: enters System OFF at boot (no wake-up source, no RAM retention, trim workaround applied) | `samples/nrf71_power_test` (from `simonduq/unified-test`, adapted to build on `main`) |
 
@@ -103,13 +103,11 @@ Repeat this for every toolchain you install.
 
 Run from the workspace root. Replace the toolchain version if you use another one.
 
-### 3.1 Wi-Fi shell with zperf and `uart_off`
-
-`samples/wifi_shell` is a copy of `nrf/samples/wifi/shell` plus `src/uart_off.c` (see 3.4).
+### 3.1 Wi-Fi shell with zperf
 
 ```sh
 nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
-  west build -p -b nrf7120dk/nrf7120/cpuapp -d samples/wifi_shell/build samples/wifi_shell --sysbuild -- \
+  west build -p -b nrf7120dk/nrf7120/cpuapp -d nrf/samples/wifi/shell/build nrf/samples/wifi/shell --sysbuild -- \
   -DEXTRA_CONF_FILE=nrf71-zperf.conf \
   '-DEXTRA_DTC_OVERLAY_FILE=${ZEPHYR_NRFXLIB_MODULE_DIR}/nrf71_wifi/bins/0.1.0/nrf7120_wifi_patch.dtsi' \
   -DCONFIG_WIFI_NRF71_PATCH=y \
@@ -118,7 +116,7 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 
 The extra arguments match the `sample.nrf7120.shell.zperf` scenario in the sample's `sample.yaml`:
 the nRF7120 Wi-Fi ROM patch overlay, `CONFIG_WIFI_NRF71_PATCH=y`, and disabling the nRF70 sysbuild image.
-The prebuilt `firmware/wifi_shell_zperf.hex` is `wifi_shell/zephyr/zephyr.nrf7120.hex` from this build
+The prebuilt `firmware/wifi_shell_zperf.hex` is `shell/zephyr/zephyr.nrf7120.hex` from this build
 (`firmware/power_consumption_systemonidle64k.hex` is `power_consumption/zephyr/zephyr.hex` from the next one).
 
 ### 3.2 Power consumption (System ON idle)
@@ -163,28 +161,7 @@ nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
 Without the first option the image boots to a shell; run `systemoff` (or press `sw0`) to enter System OFF.
 The sample writes `TRIM.LOWPOWER = 7` right before powering off. Only a pin reset or power cycle wakes it.
 
-### 3.4 `uart_off` (for DTIM / idle-link current)
-
-The Wi-Fi shell in `samples/wifi_shell` has an extra command, added in `src/uart_off.c`:
-
-```
-uart_off <seconds>      # 1-3600
-```
-
-It stops the shell and releases the shell UART so runtime PM suspends it, then turns it back on after the time has passed.
-Nothing can be typed or printed in between and log output is dropped. Intended use for a DTIM measurement:
-
-1. `wifi connect -s <SSID> -k 1 -p <PASSWORD>`, and check `wifi status` and `wifi ps`.
-2. Start the PPK2 capture, then run `uart_off 60`.
-3. Measure the idle link current while the UART is off.
-
-If another user keeps the UART active, the command reports `UART did not suspend` and turns the shell back on at once.
-`uart_off` compiles into the prebuilt image but has not been tested on a board yet.
-
-The zperf configuration (`nrf71-zperf.conf`) disables credential storage and settings, so credentials are not kept
-across reboots and you have to connect again after each reset. A build without that file keeps them.
-
-### 3.5 Flash from a build
+### 3.4 Flash from a build
 
 ```sh
 nrfutil sdk-manager toolchain launch --ncs-version=v3.5.0-preview2 -- \
